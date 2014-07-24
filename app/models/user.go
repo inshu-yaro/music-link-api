@@ -15,6 +15,15 @@ type User struct {
 	Email     string        `json:"email"      bson:"email"`
 }
 
-func (u *User) LoadFromFacebook() {
-
+func (u *User) LoadFromFacebook() error {
+	res, err := fb.Get("/me", fb.Params{
+		"access_token": u.Token,
+	})
+	if err != nil {
+		return err
+	}
+	res.Decode(u)
+	u.Birthday, err = time.Parse("01/02/2006", res.Get("birthday").(string))
+	res.DecodeField("email", &u.Email)
+	return err
 }

@@ -19,9 +19,13 @@ func (c *Users) Index() rev.Result {
 
 func (c *Users) Create() rev.Result {
 	var user models.User
-	err := json.NewDecoder(c.Request.Body).Decode(&user)
-	if err != nil {
+	if err := json.NewDecoder(c.Request.Body).Decode(&user); err != nil {
 		rev.ERROR.Println(err)
+		return c.RenderJson(err)
+	}
+	if err := user.LoadFromFacebook(); err != nil {
+		rev.ERROR.Println(err)
+		return c.RenderJson(err)
 	}
 	user.Id = bson.NewObjectId()
 	c.C("users").Insert(&user)
